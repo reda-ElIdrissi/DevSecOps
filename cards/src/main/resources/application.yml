@@ -1,0 +1,28 @@
+server:
+  port: 9000
+  address: 127.0.0.1
+spring:
+  application:
+    name: cards
+  datasource:
+    url: jdbc:h2:mem:cardsdb;DB_CLOSE_DELAY=-1
+    username: sa
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+build:
+  version: "1.0.0"
+cards:
+  message: "Local demonstration"
+  contact-details:
+    name: "EazyBank"
+  on-call-support: []

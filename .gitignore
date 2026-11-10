@@ -1,0 +1,10 @@
+runtime/
+**/target/
+.idea/
+*.iml
+.env
+*.p12
+*.pem
+*.key
+*.zip
+__pycache__/
