@@ -1,6 +1,7 @@
 package com.eazybytes.loans.exception;
 
 import com.eazybytes.loans.dto.ErrorResponseDto;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -41,10 +42,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorResponseDto errorResponseDTO = new ErrorResponseDto(
                 webRequest.getDescription(false),
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                exception.getMessage(),
+                "Unexpected service error",
                 LocalDateTime.now()
         );
         return new ResponseEntity<>(errorResponseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidParameter(ConstraintViolationException exception, WebRequest request) {
+        return serviceError(HttpStatus.BAD_REQUEST, "Invalid request parameter", request);
+    }
+
+    private ResponseEntity<ErrorResponseDto> serviceError(HttpStatus status, String message, WebRequest request) {
+        return ResponseEntity.status(status)
+                .body(new ErrorResponseDto(request.getDescription(false), status, message, LocalDateTime.now()));
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -53,7 +64,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorResponseDto errorResponseDTO = new ErrorResponseDto(
                 webRequest.getDescription(false),
                 HttpStatus.NOT_FOUND,
-                exception.getMessage(),
+                "Requested record was not found",
                 LocalDateTime.now()
         );
         return new ResponseEntity<>(errorResponseDTO, HttpStatus.NOT_FOUND);
