@@ -24,7 +24,7 @@ public class CardsServiceImpl implements ICardsService {
      * @param mobileNumber - Mobile Number of the Customer
      */
     @Override
-    public void createCard(String mobileNumber) {
+    public synchronized void createCard(String mobileNumber) {
         Optional<Cards> optionalCards= cardsRepository.findByMobileNumber(mobileNumber);
         if(optionalCards.isPresent()){
             throw new CardAlreadyExistsException("Card already registered with given mobileNumber "+mobileNumber);

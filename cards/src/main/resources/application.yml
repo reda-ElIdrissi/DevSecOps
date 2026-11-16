@@ -1,7 +1,21 @@
 server:
   port: 9000
   address: 127.0.0.1
+  ssl:
+    enabled: true
+    enabled-protocols: TLSv1.3,TLSv1.2
+    key-store: ${TLS_KEYSTORE}
+    key-store-password: ${TLS_KEYSTORE_PASSWORD}
+    key-store-type: PKCS12
 spring:
+  ssl:
+    bundle:
+      jks:
+        outbound:
+          truststore:
+            location: ${TLS_TRUSTSTORE}
+            password: ${TLS_TRUSTSTORE_PASSWORD}
+            type: PKCS12
   application:
     name: cards
   datasource:
@@ -26,3 +40,5 @@ cards:
   contact-details:
     name: "EazyBank"
   on-call-support: []
+security:
+  issuer: ${ISSUER_URI:https://localhost:8443/realms/eazybank}
