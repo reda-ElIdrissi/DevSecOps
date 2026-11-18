@@ -1,12 +1,14 @@
 package com.eazybytes.accounts.service.impl;
 
 import com.eazybytes.accounts.dto.AccountsDto;
-import com.eazybytes.accounts.dto.CardsDto;
 import com.eazybytes.accounts.dto.CustomerDetailsDto;
-import com.eazybytes.accounts.dto.LoansDto;
 import com.eazybytes.accounts.entity.Accounts;
 import com.eazybytes.accounts.entity.Customer;
 import com.eazybytes.accounts.exception.ResourceNotFoundException;
+import com.eazybytes.accounts.exception.DownstreamFailure;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
+import org.springframework.web.client.RestClientException;
 import com.eazybytes.accounts.mapper.AccountsMapper;
 import com.eazybytes.accounts.mapper.CustomerMapper;
 import com.eazybytes.accounts.repository.AccountsRepository;
@@ -40,13 +42,20 @@ public class CustomersServiceImpl implements ICustomersService {
         CustomerDetailsDto customerDetailsDto = CustomerMapper.mapToCustomerDetailsDto(customer, new CustomerDetailsDto());
         customerDetailsDto.setAccountsDto(AccountsMapper.mapToAccountsDto(accounts, new AccountsDto()));
 
-        ResponseEntity<LoansDto> loansDtoResponseEntity = loansClient.fetchLoanDetails(mobileNumber);
-        customerDetailsDto.setLoansDto(loansDtoResponseEntity.getBody());
-
-        ResponseEntity<CardsDto> cardsDtoResponseEntity = cardsClient.fetchCardDetails(mobileNumber);
-        customerDetailsDto.setCardsDto(cardsDtoResponseEntity.getBody());
+        try {
+            customerDetailsDto.setLoansDto(requireBody(loansClient.fetchLoanDetails(mobileNumber)));
+            customerDetailsDto.setCardsDto(requireBody(cardsClient.fetchCardDetails(mobileNumber)));
+        } catch (RestClientException | OAuth2AuthorizationException failure) {
+            throw DownstreamFailure.from(failure);
+        }
 
         return customerDetailsDto;
 
+    }
+    private static <T> T requireBody(ResponseEntity<T> response) {
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            throw new DownstreamFailure(HttpStatus.BAD_GATEWAY);
+        }
+        return response.getBody();
     }
 }
