@@ -8,3 +8,9 @@ runtime/
 *.key
 *.zip
 __pycache__/
+.env.*
+!.env.example
+*.log
+*.tmp
+Architecture_EazyBank_Securisee_v2.md
+UPSTREAM.md
